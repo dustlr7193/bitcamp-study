@@ -14,11 +14,23 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:9.0.98'
+//    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:9.0.98'
+//    implementation 'org.springframework:spring-webmvc:5.3.39'
+//    implementation 'com.mysql:mysql-connector-j:8.4.0'
+
+    implementation libs.mysql.connectorj
+    implementation libs.spring.webmvc
+    implementation libs.tomcat.embed.jasper
+    implementation libs.guava
+    implementation 'javax.servlet:jstl:1.2'
+
+
 
     testImplementation libs.junit.jupiter
+
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    implementation libs.guava
+
+
 }
 
 
