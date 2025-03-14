@@ -24,6 +24,7 @@
         <h1>강의 관리 시스템</h1>
         <p>환영합니다!</p>
     </div>
+    <a href="/board/list">게시판 보기</a>
 </div>
 </body>
 </html>

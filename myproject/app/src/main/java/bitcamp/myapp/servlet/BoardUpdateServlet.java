@@ -24,6 +24,7 @@ public class BoardUpdateServlet extends HttpServlet {
                 throw new Exception("로그인이 필요합니다.");
             }
 
+//            req.setCharacterEncoding("UTF-8");
             Board board = new Board();
             board.setNo(Integer.parseInt(req.getParameter("no")));
             board.setTitle(req.getParameter("title"));

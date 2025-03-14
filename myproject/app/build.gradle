@@ -23,8 +23,7 @@ dependencies {
     implementation libs.tomcat.embed.jasper
     implementation libs.guava
     implementation 'javax.servlet:jstl:1.2'
-
-
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.782'
 
     testImplementation libs.junit.jupiter
 
