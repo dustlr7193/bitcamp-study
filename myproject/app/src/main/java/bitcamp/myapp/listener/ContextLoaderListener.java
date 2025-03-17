@@ -1,6 +1,7 @@
 package bitcamp.myapp.listener;
 
 import bitcamp.myapp.dao.MySQLBoardDao;
+import bitcamp.myapp.dao.MySQLBoardFileDao;
 import bitcamp.myapp.dao.MySQLMemberDao;
 import bitcamp.myapp.service.DefaultBoardService;
 import bitcamp.myapp.service.DefaultMemberService;
@@ -10,8 +11,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Properties;
 
 @WebListener
 public class ContextLoaderListener implements ServletContextListener {
@@ -31,21 +34,32 @@ public class ContextLoaderListener implements ServletContextListener {
 //      DriverManager.registerDriver(driver);
 
             // 4. DB에 연결
-            con= DriverManager.getConnection("jdbc:mysql://db-32e1md-kr.vpc-pub-cdb.ntruss.com:3306/studentdb",
-                    "student",
-                    "bitcamp123!@#");
+
+
+            String userHome = System.getProperty("user.home");
+            Properties appProps = new Properties();
+            appProps.load(new FileReader(userHome + "/config/bitcamp-study.properties"));
+
+            System.out.println(appProps.getProperty("ncp.end-point"));
+
+            con = DriverManager.getConnection(
+                    appProps.getProperty("jdbc.url"),
+                    appProps.getProperty("jdbc.username"),
+                    appProps.getProperty("jdbc.password"));
 
             ServletContext ctx = sce.getServletContext();
 
             MySQLMemberDao memberDao = new MySQLMemberDao(con);
+            MySQLBoardDao boardDao = new MySQLBoardDao(con);
+            MySQLBoardFileDao boardFileDao = new MySQLBoardFileDao(con);
+
             DefaultMemberService memberService = new DefaultMemberService(memberDao);
             ctx.setAttribute("memberService", memberService);
 
-            MySQLBoardDao boardDao = new MySQLBoardDao(con);
-            DefaultBoardService boardService = new DefaultBoardService(boardDao);
+            DefaultBoardService boardService = new DefaultBoardService(boardDao, boardFileDao);
             ctx.setAttribute("boardService", boardService);
 
-            NCPObjectStorageService storageService =new NCPObjectStorageService();
+            NCPObjectStorageService storageService = new NCPObjectStorageService(appProps);
             ctx.setAttribute("storageService", storageService);
 
             System.out.println("웹애플리케이션 실행 환경 준비!");

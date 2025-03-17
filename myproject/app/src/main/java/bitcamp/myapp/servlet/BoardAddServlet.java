@@ -2,6 +2,7 @@ package bitcamp.myapp.servlet;
 
 import bitcamp.myapp.service.BoardService;
 import bitcamp.myapp.service.StorageService;
+import bitcamp.myapp.vo.AttachedFile;
 import bitcamp.myapp.vo.Board;
 import bitcamp.myapp.vo.Member;
 
@@ -16,6 +17,7 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -41,13 +43,11 @@ public class BoardAddServlet extends HttpServlet {
             board.setContent(req.getParameter("content"));
             board.setWriter(loginUser);
 
-            BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
-            boardService.add(board);
-
             StorageService storageService =
                     (StorageService) getServletContext().getAttribute("storageService");
 
             Collection<Part> parts = req.getParts();
+            ArrayList<AttachedFile> fileList = new ArrayList<>();
 
             for (Part part : parts) {
                 if(!part.getName().equals("files")){
@@ -58,7 +58,18 @@ public class BoardAddServlet extends HttpServlet {
 
                 // 클라우드 업로드
                 storageService.upload("board/"+fileName, part.getInputStream());
+
+                AttachedFile attachedFile = new AttachedFile();
+                attachedFile.setFilename(fileName);
+                attachedFile.setOriginFilename(part.getSubmittedFileName());
+//                attachedFile.setBoardNo(board.getNo());
+                fileList.add(attachedFile);
             }
+
+            board.setAttachedFiles(fileList);
+
+            BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
+            boardService.add(board);
 
             resp.sendRedirect("/board/list");
 
