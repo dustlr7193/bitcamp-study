@@ -6,6 +6,7 @@ import bitcamp.myapp.vo.Member;
 
 import java.io.FileNotFoundException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -30,8 +31,8 @@ public class MySQLBoardDao implements BoardDao {
                 " from ed_board b" +
                 " join ed_member m on b.member_id=m.member_id";
 
-        try (Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery();
         ) {
 
             ArrayList<Board> list = new ArrayList<>();
@@ -61,15 +62,19 @@ public class MySQLBoardDao implements BoardDao {
     /*
       insert into ed_board(title, content, member_id)
       values ('', '', '')
-     */
+
         String sql = "insert into ed_board(title, content, member_id) values (" +
                 "'" + board.getTitle() + "', " +
                 "'" + board.getContent() + "', " +
-                board.getWriter().getNo() + ")";
+                board.getWriter().getNo() + ")"; // sql 삽입 공격을 당할 수 있음
+    */
+        String sql = "insert into ed_board(title, content, member_id) values (?,?,?)";
 
-
-        try (Statement stmt = con.createStatement()) {
-            int count = stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+        try (PreparedStatement stmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, board.getTitle());
+            stmt.setString(2, board.getContent());
+            stmt.setInt(3, board.getWriter().getNo());
+            int count = stmt.executeUpdate();
 
             ResultSet rs = stmt.getGeneratedKeys(); // 자동 생성 번호 PK 값을 꺼낼 객체 준비
             rs.next(); // 이 객체를 사용하여 서버에서 자동 생성된 PK 값을 가져온다.
@@ -108,43 +113,45 @@ public class MySQLBoardDao implements BoardDao {
                 "         inner join ed_member m on b.member_id=m.member_id" +
                 "         left outer join ed_attach_file af on b.board_id=af.board_id" +
                 "     where" +
-                "         b.board_id=" + no;
+                "         b.board_id=?";
 
-        try (Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql);
         ) {
+            stmt.setInt(1, no);
 
-            Board board = null;
-            ArrayList<AttachedFile> attachedFiles = new ArrayList<>();
+            try (ResultSet rs = stmt.executeQuery();) {
 
-            while (rs.next()) {
-                if (board == null) {
-                    board = new Board();
-                    board.setNo(rs.getInt("board_id"));
-                    board.setTitle(rs.getString("title"));
-                    board.setContent(rs.getString("content"));
-                    board.setCreateDate(rs.getDate("create_date"));
-                    board.setViewCount(rs.getInt("view_count"));
+                Board board = null;
+                ArrayList<AttachedFile> attachedFiles = new ArrayList<>();
 
-                    Member member = new Member();
-                    member.setNo(rs.getInt("member_id"));
-                    member.setName(rs.getString("name"));
+                while (rs.next()) {
+                    if (board == null) {
+                        board = new Board();
+                        board.setNo(rs.getInt("board_id"));
+                        board.setTitle(rs.getString("title"));
+                        board.setContent(rs.getString("content"));
+                        board.setCreateDate(rs.getDate("create_date"));
+                        board.setViewCount(rs.getInt("view_count"));
 
-                    board.setWriter(member);
-                    board.setAttachedFiles(attachedFiles);
+                        Member member = new Member();
+                        member.setNo(rs.getInt("member_id"));
+                        member.setName(rs.getString("name"));
+
+                        board.setWriter(member);
+                        board.setAttachedFiles(attachedFiles);
+                    }
+
+                    if (rs.getInt("af_id") > 0) {
+                        AttachedFile attachedFile = new AttachedFile();
+                        attachedFile.setNo(rs.getInt("af_id"));
+                        attachedFile.setFilename(rs.getString("filename"));
+                        attachedFile.setOriginFilename(rs.getString("origin_filename"));
+
+                        attachedFiles.add(attachedFile);
+                    }
                 }
-
-                if (rs.getInt("af_id") > 0) {
-                    AttachedFile attachedFile = new AttachedFile();
-                    attachedFile.setNo(rs.getInt("af_id"));
-                    attachedFile.setFilename(rs.getString("filename"));
-                    attachedFile.setOriginFilename(rs.getString("origin_filename"));
-
-                    attachedFiles.add(attachedFile);
-                }
+                return board;
             }
-
-            return board;
 
         } catch (Exception e) {
             throw new DaoException(e);
@@ -153,13 +160,18 @@ public class MySQLBoardDao implements BoardDao {
 
     public int update(Board board) {
         String sql = "update ed_board set " +
-                "          title='" + board.getTitle() + "'," +
-                "          content='" + board.getContent() + "'" +
+                "          title=?," +
+                "          content=?" +
                 "      where" +
-                "          board_id=" + board.getNo();
+                "          board_id=?";
 
-        try (Statement stmt = con.createStatement()) {
-            return stmt.executeUpdate(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, board.getTitle());
+            stmt.setString(2, board.getContent());
+            stmt.setInt(3, board.getNo());
+
+            return stmt.executeUpdate();
         } catch (Exception e) {
             throw new DaoException(e);
         }
@@ -167,13 +179,28 @@ public class MySQLBoardDao implements BoardDao {
 
     public int delete(int no) {
         String sql = "delete from ed_board" +
-                "    where board_id=" + no;
+                "    where board_id=?";
 
-        try (Statement stmt = con.createStatement()) {
-            return stmt.executeUpdate(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, no);
+            return stmt.executeUpdate();
         } catch (Exception e) {
             throw new DaoException(e);
         }
     }
 
+    @Override
+    public int updateViewCount(int no, int increment) {
+        String sql = "update ed_board set " +
+                "          view_count = view_count + ?" +
+                "      where board_id= ?";
+
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, increment);
+            stmt.setInt(2, no);
+            return stmt.executeUpdate();
+        } catch (Exception e) {
+            throw new DaoException(e);
+        }
+    }
 }

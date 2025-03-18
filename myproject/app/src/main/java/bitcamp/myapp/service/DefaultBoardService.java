@@ -16,11 +16,11 @@ public class DefaultBoardService implements BoardService {
         this.boardDao = boardDao;
         this.boardFileDao = boardFileDao;
     }
-    @Override
+
     public List<Board> list() {
         return boardDao.findAll();
     }
-    @Override
+
     public void add(Board board) {
         boardDao.insert(board);
 
@@ -29,23 +29,33 @@ public class DefaultBoardService implements BoardService {
             boardFileDao.insert(file);
         }
     }
-    @Override
+
     public Board get(int no) {
         return boardDao.findByNo(no);
     }
-    @Override
+
     public void update(Board board) {
         boardDao.update(board);
+
+        for (AttachedFile file : board.getAttachedFiles()) {
+            boardFileDao.insert(file);
+        }
     }
-    @Override
+
     public void delete(int no) {
+        boardFileDao.deleteAllByBoardNo(no);
         boardDao.delete(no);
     }
 
     @Override
+    public void increaseViewCount(int no) {
+        boardDao.updateViewCount(no, 1);
+    }
+
     public AttachedFile getAttachedFile(int fileNo) {
         return boardFileDao.findByNo(fileNo);
     }
+
     @Override
     public void deleteAttachedFile(int fileNo) {
         boardFileDao.delete(fileNo);

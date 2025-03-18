@@ -5,6 +5,7 @@ import bitcamp.myapp.vo.Board;
 import bitcamp.myapp.vo.Member;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -23,14 +24,13 @@ public class MySQLBoardFileDao implements BoardFileDao {
       insert into ed_attach_file(board_id, filename, origin_filename)
       values (1, 'aaaa', 'a.gif')
      */
-        String sql = "insert into ed_attach_file(board_id, filename, origin_filename) values (" +
-                attachedFile.getBoardNo() + ", " +
-                "'" + attachedFile.getFilename() + "', " +
-                "'" + attachedFile.getOriginFilename() + "')";
+        String sql = "insert into ed_attach_file(board_id, filename, origin_filename) values (?,?,?)";
 
-
-        try (Statement stmt = con.createStatement()) {
-            return stmt.executeUpdate(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1,attachedFile.getBoardNo());
+            stmt.setString(2, attachedFile.getFilename());
+            stmt.setString(3, attachedFile.getOriginFilename());
+            return stmt.executeUpdate();
         } catch (Exception e) {
             throw new DaoException(e);
         }
@@ -53,10 +53,11 @@ public class MySQLBoardFileDao implements BoardFileDao {
                 "        filename," +
                 "        origin_filename" +
                 "      from ed_attach_file" +
-                "      where af_id=" + fileNo;
+                "      where af_id=?";
 
-        try (Statement stmt = con.createStatement()) {
-            ResultSet rs = stmt.executeQuery(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, fileNo);
+            ResultSet rs = stmt.executeQuery();
             if (!rs.next()) {
                 return null;
             }
@@ -81,11 +82,25 @@ public class MySQLBoardFileDao implements BoardFileDao {
       delete from ed_attach_file
       where af_id=fileNo
      */
-        String sql = "delete from ed_attach_file\n" +
-                "      where af_id=" + fileNo;
+        String sql = "delete from ed_attach_file " +
+                "      where af_id=?";
 
-        try (Statement stmt = con.createStatement()) {
-            return stmt.executeUpdate(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, fileNo);
+            return stmt.executeUpdate();
+        } catch (Exception e) {
+            throw new DaoException(e);
+        }
+    }
+    @Override
+    public int deleteAllByBoardNo(int boardNo) {
+
+        String sql = "delete from ed_attach_file " +
+                "      where board_id=?";
+
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, boardNo);
+            return stmt.executeUpdate();
         } catch (Exception e) {
             throw new DaoException(e);
         }

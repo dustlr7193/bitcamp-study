@@ -3,6 +3,7 @@ package bitcamp.myapp.dao;
 import bitcamp.myapp.vo.Member;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -20,21 +21,27 @@ public class MySQLMemberDao implements MemberDao {
                 "      m.name," +
                 "      m.email" +
                 "    from ed_member m" +
-                "    where m.email = '" + email + "' and m.pwd = sha2('" + password + "', 256)";
+                "    where m.email = ? and m.pwd = sha2(?, 256)";
 
-        try (Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(sql);
+        try (PreparedStatement stmt = con.prepareStatement(sql);
         ) {
-            if (!rs.next()) {
-                return null;
+
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (!rs.next()) {
+                    return null;
+                }
+
+                Member member = new Member();
+                member.setNo(rs.getInt("member_id"));
+                member.setName(rs.getString("name"));
+                member.setEmail(rs.getString("email"));
+
+                return member;
             }
-
-            Member member = new Member();
-            member.setNo(rs.getInt("member_id"));
-            member.setName(rs.getString("name"));
-            member.setEmail(rs.getString("email"));
-
-            return member;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

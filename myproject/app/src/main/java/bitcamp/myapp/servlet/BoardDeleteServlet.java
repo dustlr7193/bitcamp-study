@@ -1,6 +1,8 @@
 package bitcamp.myapp.servlet;
 
 import bitcamp.myapp.service.BoardService;
+import bitcamp.myapp.service.StorageService;
+import bitcamp.myapp.vo.AttachedFile;
 import bitcamp.myapp.vo.Board;
 import bitcamp.myapp.vo.Member;
 
@@ -27,10 +29,17 @@ public class BoardDeleteServlet extends HttpServlet {
             int no = Integer.parseInt(req.getParameter("no"));
 
             BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
-            Board oldBoard = boardService.get(no);
+            Board board = boardService.get(no);
 
-            if (oldBoard.getWriter().getNo() != loginUser.getNo()) {
+            if (board.getWriter().getNo() != loginUser.getNo()) {
                 throw new Exception("삭제 권한이 없습니다.");
+            }
+
+            //네이버 클라우드 Object Storage에 업로드한 파일 삭제
+            StorageService storageService = (StorageService) getServletContext().getAttribute("storageService");
+
+            for (AttachedFile attachedFile : board.getAttachedFiles()) {
+                storageService.delete("board/" + attachedFile.getFilename());
             }
 
             boardService.delete(no);
