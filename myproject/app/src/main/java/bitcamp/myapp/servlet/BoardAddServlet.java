@@ -62,14 +62,20 @@ public class BoardAddServlet extends HttpServlet {
                 AttachedFile attachedFile = new AttachedFile();
                 attachedFile.setFilename(fileName);
                 attachedFile.setOriginFilename(part.getSubmittedFileName());
-//                attachedFile.setBoardNo(board.getNo());
                 fileList.add(attachedFile);
             }
 
             board.setAttachedFiles(fileList);
 
-            BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
-            boardService.add(board);
+            try {
+                BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
+                boardService.add(board);
+            } catch (Exception e) {
+                for(AttachedFile file : board.getAttachedFiles()){
+                    storageService.delete("board/"+file.getFilename());
+                }
+                throw e;
+            }
 
             resp.sendRedirect("/board/list");
 

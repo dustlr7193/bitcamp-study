@@ -3,9 +3,8 @@ package bitcamp.myapp.listener;
 import bitcamp.myapp.dao.MySQLBoardDao;
 import bitcamp.myapp.dao.MySQLBoardFileDao;
 import bitcamp.myapp.dao.MySQLMemberDao;
-import bitcamp.myapp.service.DefaultBoardService;
-import bitcamp.myapp.service.DefaultMemberService;
-import bitcamp.myapp.service.NCPObjectStorageService;
+import bitcamp.myapp.service.*;
+import bitcamp.transaction.TransactionProxyFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -53,11 +52,16 @@ public class ContextLoaderListener implements ServletContextListener {
             MySQLBoardDao boardDao = new MySQLBoardDao(con);
             MySQLBoardFileDao boardFileDao = new MySQLBoardFileDao(con);
 
-            DefaultMemberService memberService = new DefaultMemberService(memberDao);
-            ctx.setAttribute("memberService", memberService);
+            //서비스 객체의 트랜젝션을 처리할 프로시 객체 생성기
+            TransactionProxyFactory transactionProxyFactory = new TransactionProxyFactory(con);
 
-            DefaultBoardService boardService = new DefaultBoardService(boardDao, boardFileDao);
-            ctx.setAttribute("boardService", boardService);
+            DefaultMemberService memberService = new DefaultMemberService(memberDao);
+            ctx.setAttribute("memberService",
+                    transactionProxyFactory.createTransactionProxy(memberService, MemberService.class));
+
+            DefaultBoardService boardService = new DefaultBoardService(boardDao, boardFileDao,con);
+            ctx.setAttribute("boardService",
+                    transactionProxyFactory.createTransactionProxy(boardService, BoardService.class));
 
             NCPObjectStorageService storageService = new NCPObjectStorageService(appProps);
             ctx.setAttribute("storageService", storageService);
