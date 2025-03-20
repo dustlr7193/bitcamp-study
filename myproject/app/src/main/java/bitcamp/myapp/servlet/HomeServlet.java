@@ -11,9 +11,9 @@ import java.io.PrintWriter;
 @WebServlet("/home")
 public class HomeServlet extends HttpServlet {
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("text/html; charset=UTF-8");
-        req.getRequestDispatcher("/home.jsp").include(req, resp);
-    }
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    resp.setContentType("text/html; charset=UTF-8");
+    req.getRequestDispatcher("/home.jsp").include(req, resp);
+  }
 }

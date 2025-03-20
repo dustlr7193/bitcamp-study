@@ -83,7 +83,7 @@
             <textarea id="content" name="content" required></textarea>
         </div>
         <div class="form-group">
-            <label for="files">첨부파일</label>
+            <label for="files">첨부파일:</label>
             <input type="file" id="files" name="files" multiple>
         </div>
         <div class="form-group">

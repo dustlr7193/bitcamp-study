@@ -18,41 +18,40 @@ import java.io.StringWriter;
 
 @WebServlet("/board/delete")
 public class BoardDeleteServlet extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            Member loginUser = (Member) req.getSession().getAttribute("loginUser");
-            if (loginUser == null) {
-                throw new Exception("로그인이 필요합니다.");
-            }
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    try {
+      Member loginUser = (Member) req.getSession().getAttribute("loginUser");
+      if (loginUser == null) {
+        throw new Exception("로그인이 필요합니다.");
+      }
 
-            int no = Integer.parseInt(req.getParameter("no"));
+      int no = Integer.parseInt(req.getParameter("no"));
 
-            BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
-            Board board = boardService.get(no);
+      BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
+      Board board = boardService.get(no);
 
-            if (board.getWriter().getNo() != loginUser.getNo()) {
-                throw new Exception("삭제 권한이 없습니다.");
-            }
+      if (board.getWriter().getNo() != loginUser.getNo()) {
+        throw new Exception("삭제 권한이 없습니다.");
+      }
 
-            //네이버 클라우드 Object Storage에 업로드한 파일 삭제
-            StorageService storageService = (StorageService) getServletContext().getAttribute("storageService");
+      // 네이버 클라우드 Object Storage에 업로드한 파일 삭제
+      StorageService storageService = (StorageService) getServletContext().getAttribute("storageService");
+      for (AttachedFile attachedFile : board.getAttachedFiles()) {
+        storageService.delete("board/" + attachedFile.getFilename());
+      }
 
-            for (AttachedFile attachedFile : board.getAttachedFiles()) {
-                storageService.delete("board/" + attachedFile.getFilename());
-            }
+      boardService.delete(no);
+      resp.sendRedirect("/board/list");
 
-            boardService.delete(no);
-            resp.sendRedirect("/board/list");
+    } catch (Exception e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
 
-        } catch (Exception e) {
-            StringWriter stringWriter = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(stringWriter);
-            e.printStackTrace(printWriter);
-
-            RequestDispatcher 요청배달자 = req.getRequestDispatcher("/error.jsp");
-            req.setAttribute("exception", stringWriter.toString()); // JSP에게 오류 정보 전달
-            요청배달자.forward(req, resp); // 오류가 발생하기 직전까지 출력했던 것은 버린다.
-        }
+      RequestDispatcher 요청배달자 = req.getRequestDispatcher("/error.jsp");
+      req.setAttribute("exception", stringWriter.toString()); // JSP에게 오류 정보 전달
+      요청배달자.forward(req, resp); // 오류가 발생하기 직전까지 출력했던 것은 버린다.
     }
+  }
 }

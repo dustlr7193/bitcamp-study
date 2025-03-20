@@ -104,12 +104,12 @@
             <label for="files">첨부파일:</label>
             <input type="file" id="files" name="files" multiple>
             <ul id="attached-files">
-                <c:forEach items="${board.attachedFiles}" var="attachedFile">
-                    <li>
-                        <a href="/board/file/download?fileNo=${attachedFile.no}">${attachedFile.originFilename}</a>
-                        <button type="button" onclick="deleteFile(${attachedFile.no})">삭제</button>
-                    </li>
-                </c:forEach>
+            <c:forEach items="${board.attachedFiles}" var="attachedFile">
+                <li>
+                    <a href="/board/file/download?fileNo=${attachedFile.no}">${attachedFile.originFilename}</a>
+                    <button type="button" onclick="deleteFile(${attachedFile.no})">삭제</button>
+                </li>
+            </c:forEach>
             </ul>
         </div>
         <div class="form-group">
@@ -133,13 +133,13 @@
 </div>
 
 <script>
-    function deleteBoard(no) {
-        location.href = "/board/delete?no=" + no;
-    }
+function deleteBoard(no) {
+    location.href = "/board/delete?no=" + no;
+}
 
-    function deleteFile(no) {
-        location.href = "/board/file/delete?no=" + no;
-    }
+function deleteFile(no) {
+    location.href = "/board/file/delete?no=" + no;
+}
 </script>
 </body>
 </html>

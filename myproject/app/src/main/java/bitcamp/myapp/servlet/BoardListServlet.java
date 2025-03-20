@@ -19,25 +19,25 @@ import java.util.List;
 
 @WebServlet("/board/list")
 public class BoardListServlet extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
-            List<Board> list = boardService.list();
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    try {
+      BoardService boardService = (BoardService) getServletContext().getAttribute("boardService");
+      List<Board> list = boardService.list();
 
-            req.setAttribute("list", list);
+      req.setAttribute("list", list);
 
-            resp.setContentType("text/html; charset=UTF-8");
-            req.getRequestDispatcher("/board/list.jsp").include(req, resp);
+      resp.setContentType("text/html; charset=UTF-8");
+      req.getRequestDispatcher("/board/list.jsp").include(req, resp);
 
-        } catch (Exception e) {
-            StringWriter stringWriter = new StringWriter();
-            PrintWriter printWriter = new PrintWriter(stringWriter);
-            e.printStackTrace(printWriter);
+    } catch (Exception e) {
+      StringWriter stringWriter = new StringWriter();
+      PrintWriter printWriter = new PrintWriter(stringWriter);
+      e.printStackTrace(printWriter);
 
-            RequestDispatcher 요청배달자 = req.getRequestDispatcher("/error.jsp");
-            req.setAttribute("exception", stringWriter.toString()); // JSP에게 오류 정보 전달
-            요청배달자.forward(req, resp); // 오류가 발생하기 직전까지 출력했던 것은 버린다.
-        }
+      RequestDispatcher 요청배달자 = req.getRequestDispatcher("/error.jsp");
+      req.setAttribute("exception", stringWriter.toString()); // JSP에게 오류 정보 전달
+      요청배달자.forward(req, resp); // 오류가 발생하기 직전까지 출력했던 것은 버린다.
     }
+  }
 }

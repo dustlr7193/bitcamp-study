@@ -4,8 +4,9 @@ import bitcamp.myapp.vo.AttachedFile;
 
 public interface BoardFileDao {
 
-    int insert(AttachedFile attachedFile) throws DaoException;
-    AttachedFile findByNo(int fileNo) throws DaoException;
-    int delete(int fileNo);
-    int deleteAllByBoardNo(int boardNo) throws DaoException;
+  int insert(AttachedFile attachedFile) throws DaoException;
+  AttachedFile findByNo(int fileNo) throws DaoException;
+  int delete(int fileNo) throws DaoException;
+  int deleteAllByBoardNo(int boardNo) throws DaoException;
+
 }

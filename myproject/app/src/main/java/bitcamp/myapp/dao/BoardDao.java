@@ -11,15 +11,15 @@ import java.util.List;
 
 public interface BoardDao {
 
-    List<Board> findAll() throws DaoException;
+  List<Board> findAll() throws DaoException;
 
-    int insert(Board board) throws DaoException;
+  int insert(Board board) throws DaoException;
 
-    Board findByNo(int no) throws DaoException;
+  Board findByNo(int no) throws DaoException;
 
-    int update(Board board) throws DaoException;
+  int update(Board board) throws DaoException;
 
-    int delete(int no) throws DaoException;
+  int delete(int no) throws DaoException;
 
-    int updateViewCount(int no, int increment);
+  int updateViewCount(int no, int increment);
 }
