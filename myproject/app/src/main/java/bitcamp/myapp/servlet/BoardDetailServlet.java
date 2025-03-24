@@ -28,16 +28,10 @@ public class BoardDetailServlet extends HttpServlet {
       req.setAttribute("board", board);
 
       resp.setContentType("text/html; charset=UTF-8");
-      req.getRequestDispatcher("/board/detail.jsp").include(req, resp);
+      req.setAttribute("viewUrl", "/board/detail.jsp");
 
     } catch (Exception e) {
-      StringWriter stringWriter = new StringWriter();
-      PrintWriter printWriter = new PrintWriter(stringWriter);
-      e.printStackTrace(printWriter);
-
-      RequestDispatcher 요청배달자 = req.getRequestDispatcher("/error.jsp");
-      req.setAttribute("exception", stringWriter.toString()); // JSP에게 오류 정보 전달
-      요청배달자.forward(req, resp); // 오류가 발생하기 직전까지 출력했던 것은 버린다.
+      req.setAttribute("exception", e);
     }
   }
 }

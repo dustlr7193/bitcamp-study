@@ -33,6 +33,7 @@ public class DefaultBoardService implements BoardService {
     System.out.println("DefaultBoardService.add() 호출됨!");
 
     boardDao.insert(board);
+    System.out.println(board.getNo());
 
 //    int count = 0;
     for (AttachedFile file : board.getAttachedFiles()) {
