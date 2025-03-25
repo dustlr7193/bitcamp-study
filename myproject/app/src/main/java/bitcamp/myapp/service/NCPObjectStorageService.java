@@ -1,35 +1,61 @@
 package bitcamp.myapp.service;
 
-import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
+import javax.annotation.PostConstruct;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
+@Service
 public class NCPObjectStorageService implements StorageService {
-  final String endPoint;
-  final String regionName;
-  final String accessKey;
-  final String secretKey;
 
-  final String bucketName;
+  @Value("${ncp.end-point}")
+  private String endPoint;
+  @Value("${ncp.region-name}")
+  private String regionName;
+  @Value("${ncp.access-key}")
+  private String accessKey;
+  @Value("${ncp.secret-key}")
+  private String secretKey;
+  @Value("${ncp.bucket-name}")
+  private String bucketName;
 
-  final AmazonS3 s3;
+  private AmazonS3 s3;
 
-  public NCPObjectStorageService(Properties props) {
+  /* 스프링 프레임워크에서 객체를 생성하는 과정 :
 
-    this.endPoint = props.getProperty("ncp.end-point");
-    this.regionName = props.getProperty("ncp.region-name");
-    this.accessKey = props.getProperty("ncp.access-key");
-    this.secretKey = props.getProperty("ncp.secret-key");
-    this.bucketName = props.getProperty("ncp.bucket-name");
+  1)객체 생성 -> 생성자 호출
+  NCPObjectStorageService obj = new NCPObjectStorageService();
 
-    s3 = AmazonS3ClientBuilder.standard()
+  2)@Value 애노테이션 붙은 필드에 값 삽입
+
+  3)@PostContruct 애노테이션 붙은 메소드 실행
+
+  */
+
+
+  @PostConstruct  // 객체가 생성되고 나서 호출됨
+  public void init() {
+    System.out.println("init() 호출됨 : "+ endPoint);
+
+    //AWS S3 API 버전 1에서 발생하는 경고 메시지 출력하지 않게 설정
+    //버전 2로 변경하면 경고 메시지가 발생하지 않는다.
+    //단, 버전 2는 네이버 클라우드의 Object Storage 서비스와 연동을 지원하지 않는다.
+    System.getProperties().setProperty("aws.java.v1.disableDeprecationAnnouncement", "true");
+
+    this.s3 = AmazonS3ClientBuilder.standard()
             .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, regionName))
             .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
             .build();

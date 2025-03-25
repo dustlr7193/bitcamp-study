@@ -2,11 +2,17 @@ package bitcamp.myapp.controller;
 
 import bitcamp.myapp.service.MemberService;
 import bitcamp.myapp.vo.Member;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+@Controller
+@RequestMapping("/auth")
 public class AuthController {
 
   private MemberService memberService;
@@ -15,16 +21,17 @@ public class AuthController {
     this.memberService = memberService;
   }
 
-  @RequestMapping("/auth/login-form")
-  public String form(HttpServletRequest req, HttpServletResponse resp) {
-    return "/auth/login-form.jsp";
+  @GetMapping("login-form")
+  public String form() {
+    return "/auth/login-form";
   }
 
-  @RequestMapping("/auth/login")
-  public String login(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-    String email = req.getParameter("email");
-    String password = req.getParameter("password");
-    String saveEmail = req.getParameter("saveEmail");
+  @PostMapping("login")
+  public String login(String email,
+                      String password,
+                      String saveEmail,
+                      HttpServletResponse resp,
+                      HttpSession session) throws Exception {
 
     Member member = memberService.get(email, password);
     if (member == null) {
@@ -41,13 +48,13 @@ public class AuthController {
       resp.addCookie(emailCookie);
     }
 
-    req.getSession().setAttribute("loginUser", member);
-    return "redirect:../home";
+    session.setAttribute("loginUser", member);
+    return "redirect:/home";
   }
 
-  @RequestMapping("/auth/logout")
-  public String logout(HttpServletRequest req, HttpServletResponse resp) {
-    req.getSession().invalidate();
-    return "redirect:../home";
+  @RequestMapping("logout")
+  public String logout(HttpSession session) {
+    session.invalidate();
+    return "redirect:/home";
   }
 }
