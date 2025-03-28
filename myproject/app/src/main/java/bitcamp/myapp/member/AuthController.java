@@ -1,5 +1,9 @@
 package bitcamp.myapp.member;
 
+import bitcamp.myapp.config.security04.CustomUserDetails;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +19,8 @@ public class AuthController {
 
   private MemberService memberService;
 
+  private static final Log log = LogFactory.getLog(AuthController.class);
+
   public AuthController(MemberService memberService) {
     this.memberService = memberService;
   }
@@ -25,20 +31,24 @@ public class AuthController {
     return "/auth/login-form";
   }
 
-  @PostMapping("login")
-  public String login(String email,
-                      String password,
-                      String saveEmail,
-                      HttpServletResponse resp,
-                      HttpSession session) throws Exception {
+  @PostMapping("success")
+  public String success(
+          String saveEmail,
+          @AuthenticationPrincipal CustomUserDetails principal,
+          HttpSession session,
+          HttpServletResponse resp) throws Exception {
 
-    Member member = memberService.get(email, password);
+    log.debug("Spring Security에서 로그인 성공한 후 마무리 작업 수행!");
+
+    Member member = principal.getMember();
+    session.setAttribute("loginUser", member);
+
     if (member == null) {
       return "redirect:login-form";
     }
 
     if (saveEmail != null) {
-      Cookie emailCookie = new Cookie("email", email);
+      Cookie emailCookie = new Cookie("email", member.getEmail());
       emailCookie.setMaxAge(60 * 60 * 24 * 7);
       resp.addCookie(emailCookie);
     } else {
@@ -47,13 +57,6 @@ public class AuthController {
       resp.addCookie(emailCookie);
     }
 
-    session.setAttribute("loginUser", member);
-    return "redirect:/home";
-  }
-
-  @RequestMapping("logout")
-  public String logout(HttpSession session) {
-    session.invalidate();
     return "redirect:/home";
   }
 }

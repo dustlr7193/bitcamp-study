@@ -82,6 +82,10 @@ public class BoardController {
         ArrayList<AttachedFile> fileList = new ArrayList<>();
 
         for (Part part : files) {
+            if(part.getSize() ==0){
+                continue;
+            }
+
             String filename = UUID.randomUUID().toString();
             storageService.upload("board/" + filename, part.getInputStream());
 
@@ -117,6 +121,10 @@ public class BoardController {
         ArrayList<AttachedFile> fileList = new ArrayList<>();
 
         for (MultipartFile file : files) {
+
+            if(file.getSize() ==0){
+                continue;
+            }
 
             String filename = UUID.randomUUID().toString();
             storageService.upload("board/" + filename, file.getInputStream());

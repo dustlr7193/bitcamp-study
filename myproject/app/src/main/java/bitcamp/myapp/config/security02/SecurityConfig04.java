@@ -10,19 +10,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 // 학습 목표:
-// - 사용자 정의 PasswordEncoder 만들기
-//   - encode()와 matches() 구동 원리 이해
-
+// - Spring Security에서 제공하는 BcriptPasswordEncoder 사용법
 
 //@Configuration
-public class SecurityConfig03 {
+public class SecurityConfig04 {
 
-    private static final Log log = LogFactory.getLog(SecurityConfig03.class);
+    private static final Log log = LogFactory.getLog(SecurityConfig04.class);
 
 
     @Bean
@@ -45,11 +44,6 @@ public class SecurityConfig03 {
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         log.debug("UserDetailsService 준비!");
 
-        // 임시 사용자 정보 생성
-        // 사용자가 입력한 암호를 저장할 때 날 것 그대로 저장하는 것이 아니라,
-        // 특별한 알고리즘으로 가공하여 저장한다.
-        // 로그인을 처리할 때도 사용자가 입력한 암호를 비교할 때,
-        // 내부에서 지정된 알고리즘으로 가공한 후에 저장된 값과 비교한다.
         UserDetails[] userDetails = {
                 User.builder()
                         .username("user1@test.com")
@@ -66,40 +60,28 @@ public class SecurityConfig03 {
                         .password(passwordEncoder.encode("1111"))
                         .roles("USER")
                         .build(),
-
         };
-        // 메모리에 사용자 목록을 두고 검사를 수행하는 객체 리턴
         return new InMemoryUserDetailsManager(userDetails);
-        }
+    }
 
-    // Spring Security에 기본 장착된 PasswordEncoder를 우리가 만든 인코더로 바꾼다.
-    // Spring Security에서 사용자가 입력한 로그인 정보 중에 암호를 비교할 때,
-    // 이 메서드가 리턴한 PasswordEncoder를 사용하여 비교한다.
-    // 즉 SimplePasswordEncoder.matches() 메서드를 호출하여 비교한다.
-    // 리턴 값이 true이면 로그인 성공이다.
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         log.debug("PasswordEncoder 준비!");
-        // 사용자가 입력한 암호를 그대로 보지 못하도록 가공하는 클래스 정의
-        // => 일단 테스트를 위해 암호를 가공하지 않고 그대로 리턴하게 한다.
-        return new PasswordEncoder() {
-            @Override
-            public String encode(CharSequence rawPassword) {
-                return rawPassword.toString(); // 가공하지 않는다. 원래 암호 그대로 리턴.
-            }
-            @Override
-            public boolean matches(
-                    CharSequence rawPassword, // 로그인 폼에 입력한 암호
-                    String encodedPassword // UserDetailsService 에 저장된 암호
-            ) {
-                log.debug("암호 비교:");
-                log.debug("로그인 폼에 입력한 암호: " + rawPassword);
-                log.debug("저장되어 있는 사용자 암호: " + encodedPassword);
-                // 저장된 암호와 비교하기 전에 사용자 입력한 암호를 먼저 가공한다.
-                String 가공된암호 = this.encode(rawPassword);
-                return encodedPassword.equals(가공된암호);
+
+        // spring에서 제공하는 PasswordEncoder 사용하기
+        return new BCryptPasswordEncoder(){
+            @Override                //사용자가 보낸 password,   db의 password
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+                System.out.printf("사용자 입력 암호 : %s\n", rawPassword);
+                System.out.printf("encode(사용자 입력 암호) : %s\n", encode(rawPassword));
+                System.out.printf("저장된 암호 : %s\n", encodedPassword);
+                return super.matches(rawPassword, encodedPassword);
             }
         };
     }
-
+    // static Nasted 클래스라 부름
+    // non-static Nasted 클래스 => innerclass
+    // 메소드 안에 class => localclass
 }

@@ -74,8 +74,6 @@ body {
     border-radius: 5px;
 }
 
-
-
 #page-footer {
     display: flex;
     align-items: center;
@@ -91,4 +89,16 @@ body {
     min-height: 500px;
     padding: 10px;
     xborder: 1px blue solid;
+}
+
+.error{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 40px;
+    color: white;
+    background-color: lightpink;
+    padding: 10px;
+    border: 3px solid darkred;
 }

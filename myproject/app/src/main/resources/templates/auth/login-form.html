@@ -12,6 +12,7 @@
 
     <div id="content">
     <h2>로그인</h2>
+        <p class="error" data-th-if="${param.error}">로그인 실패!</p>
     <form data-th-action="@{/auth/login}" method="post">
         <div>
             <label for="email">이메일:</label>
