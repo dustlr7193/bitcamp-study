@@ -1,4 +1,4 @@
-package bitcamp.myapp.config.security04;
+package bitcamp.myapp.config;
 
 
 import bitcamp.myapp.member.Member;
@@ -25,9 +25,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 //     -usernameParameter() 변경 "username"-> "email"
 //     -passwordParameter() 변경 "password" -> "password" 나중에 파라미터 명을 변경할 경우를 대비해서
 @Configuration
-public class SecurityConfig1 {
+public class SecurityConfig {
 
-    private static final Log log = LogFactory.getLog(SecurityConfig1.class);
+    private static final Log log = LogFactory.getLog(SecurityConfig.class);
 
 
     @Bean
@@ -36,7 +36,10 @@ public class SecurityConfig1 {
         return http
                 // 1) 요청 URL의 접근권한 설정
                 .authorizeHttpRequests()
-                    .mvcMatchers("/home", "/css/**").permitAll() // "/home" 과 "/css/**" 는 인증을 검사하지 않는다.
+                // 정규 표현식으로 패턴을 설절
+                // 예) .*\.html
+                .regexMatchers(".*\\.html").permitAll() // 주어진 정규표현식과 일치하는 요청에 대해서 인증을 검사하지 않는다.
+                    .mvcMatchers("/css/**","/js/**","/auth/**").permitAll() // 지정된 URL 요청은 인증을 검사하지 않는다.
                     .anyRequest().authenticated() // 나머지 요청 URL은 인증을 검사한다.
                     .and() // 접근제어권한설정 등록기를 만든 HttpSecurity 객체를 리턴한다.
                 // 2) 인가되지 않은 요청인 경우 Spring Security 기본 로그인 화면으로 보내기
@@ -52,8 +55,8 @@ public class SecurityConfig1 {
                 // 3) 로그아웃 설정 - formLogin()을 커스터마이징 한다면, /logout 경로가 비활성화 된다.
                 // - 따라서 다음과 같이 명시적으로 설정되야 한다.
                 .logout()
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET"))
-//                    .logoutUrl("/logout")           // 로그앙웃 URL 설정
+//                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout","GET")) //
+                    .logoutUrl("/logout")           // 로그앙웃 URL 설정. 기본은 POST 요청에만 동작한다.
                     .logoutSuccessUrl("/home")       // 로그아웃 성공 후 이동 페이지
                     .invalidateHttpSession(true)    // 세션 무효화 설정
                     .deleteCookies("JSESSIONID")    // 톰캣 서버에서 세션 ID를 전달할 때 사용하는 쿠키

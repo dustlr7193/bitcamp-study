@@ -63,6 +63,7 @@
             background-color: gray;
         }
     </style>
+    <script src="/js/common.js"></script>
 
 </head>
 <body>
@@ -117,21 +118,29 @@
         </div>
         <div class="form-group">
             <input type="submit" value="변경">
-            <input type="button" value="삭제" data-th-onclick="|deleteBoard(${board.no})|">
+            <input type="button" value="삭제" onclick="deleteBoard()">
         </div>
     </form>
     <a href="list.html" data-th-href="@{/board/list}">목록</a>
 </div>
 
+    <form id="delete-form" data-th-action="@{/board/delete}" method="post">
+        <input type="hidden" name="no" data-th-value="${board.no}">
+    </form>
+    <form id="delete-file-form" data-th-action="@{/board/file/delete}" method="post">
+        <input type="hidden" name="no">
+    </form>
+
 <footer data-th-replace="~{footer :: #page-footer}"></footer>
 
-<script>
-    function deleteBoard(no) {
-        location.href = "/board/delete?no=" + no;
+<script >
+    function deleteBoard() {
+        document.getElementById("delete-form").submit();
     }
 
     function deleteFile(no) {
-        location.href = "/board/file/delete?no=" + no;
+        document.querySelector("#delete-file-form input[name = no]").value = no;
+        document.getElementById("delete-file-form").submit();
     }
 </script>
 </body>

@@ -150,7 +150,7 @@ public class BoardController {
         return "redirect:list";
     }
 
-    @RequestMapping("delete")
+    @PostMapping("delete")
     public String delete(int no, HttpSession session) throws Exception {
         Member loginUser = (Member) session.getAttribute("loginUser");
         if (loginUser == null) {
@@ -181,7 +181,7 @@ public class BoardController {
         );
     }
 
-    @GetMapping("file/delete")
+    @PostMapping("file/delete")
     public String fileDelete(@RequestParam("no") int fileNo,HttpSession session) throws Exception {
         Member loginUser = (Member) session.getAttribute("loginUser");
         if (loginUser == null) {

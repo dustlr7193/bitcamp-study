@@ -1,6 +1,8 @@
 package bitcamp.myapp.member;
 
-import bitcamp.myapp.config.security04.CustomUserDetails;
+import bitcamp.myapp.common.JsonResult;
+import bitcamp.myapp.config.CustomUserDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +29,7 @@ public class AuthController {
 
   @GetMapping("login-form")
   public String form(@CookieValue(value = "email", required = false) String email, Model model) {
-    model.addAttribute("email",email);
+    model.addAttribute("email", email);
     return "/auth/login-form";
   }
 
@@ -56,7 +58,22 @@ public class AuthController {
       emailCookie.setMaxAge(0);
       resp.addCookie(emailCookie);
     }
-
     return "redirect:/home";
+  }
+
+  @GetMapping("user-info")
+  @ResponseBody
+  public JsonResult userInfo(HttpSession session) {
+    Member member = (Member) session.getAttribute("loginUser");
+    if (member == null) {
+      return JsonResult.builder()
+              .status(JsonResult.FAILURE)
+              .build();
+    }
+    //객체 -> json 형식의 문자열
+    return JsonResult.builder()
+            .status(JsonResult.SUCCESS)
+            .data(member)
+            .build();
   }
 }

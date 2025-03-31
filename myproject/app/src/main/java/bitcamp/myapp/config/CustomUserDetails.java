@@ -1,4 +1,4 @@
-package bitcamp.myapp.config.security04;
+package bitcamp.myapp.config;
 
 import bitcamp.myapp.member.Member;
 import lombok.Data;
