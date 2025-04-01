@@ -35,15 +35,11 @@
         }
     </style>
         <script src="/js/common.js"></script>
-
 </head>
 <body>
-
-<header data-th-replace="~{header :: page-header}"></header>
-
-<div id="content">
+<div id="page-content">
     <h1>게시글 목록</h1>
-    <a href="form.html" data-th-href="@{/board/form}">새 게시글</a>
+    <a href="form.html">새 게시글</a>
     <table>
         <thead>
         <tr>
@@ -54,21 +50,36 @@
             <th>조회수</th>
         </tr>
         </thead>
-        <tbody>
-        <tr data-th-each="board : ${list}">
-            <td data-th-text="${board.no}">1</td>
-            <td><a href="detail.html"
-                   data-th-href="@{/board/detail(no=${board.no})}"
-                   data-th-text="${board.title}">제목입니다.</a></td>
-            <td data-th-text="${board.writer.name}">홍길동</td>
-            <td data-th-text="${board.createDate}">2025-03-25</td>
-            <td data-th-text="${board.viewCount}">22</td>
-        </tr>
-        </tbody>
+        <tbody></tbody>
     </table>
 </div>
 
-<footer data-th-replace="~{footer :: #page-footer}"></footer>
+<script id="tr-template" type="text/handlebars">
+    {{#each data}}
+    <tr>
+        <td>{{no}}</td>
+        <td><a href="detail.html?no={{no}}">{{title}}</a></td>
+        <td>{{writer.name}}</td>
+        <td>{{createDate}}</td>
+        <td>{{viewCount}}</td>
+    </tr>
+    {{/each}}
+</script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+<script>
+    const tbody = document.querySelector("#page-content tbody");
+    const trTemplate = document.getElementById("tr-template");
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "/board/list",false);
+    xhr.send();
+
+    const response = JSON.parse(xhr.responseText);
+
+    const template = Handlebars.compile(trTemplate.innerHTML);
+    tbody.innerHTML = template(response);
+</script>
 </body>
 </html>

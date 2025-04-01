@@ -1,6 +1,7 @@
 package bitcamp.myapp.board;
 
 import bitcamp.myapp.cloud.StorageService;
+import bitcamp.myapp.common.JsonResult;
 import bitcamp.myapp.member.Member;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +14,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("/board")
 public class BoardController {
 
@@ -34,36 +35,31 @@ public class BoardController {
 */
 
     @GetMapping("list")
-    public ModelAndView list() {
+    public JsonResult list() {
         List<Board> list = boardService.list();
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("list", list);
-        modelAndView.setViewName("/board/list");
-        return modelAndView;
+        return JsonResult.builder()
+                .status(JsonResult.SUCCESS)
+                .data(list)
+                .build();
     }
 
+    @GetMapping("detail")
+    public JsonResult detail(int no) {
 
-//    @GetMapping("list")
-//    public String list(Model model) {
-//        List<Board> list = boardService.list();
-//        model.addAttribute("list", list);
-//        return "/board/list";
-//    }
- /*
-    @GetMapping("detail")
-    public String detail(int no,Model model) {
-        boardService.increaseViewCount(no);
+
         Board board = boardService.get(no);
-        model.addAttribute("board", board);
-        return "/board/detail";
-    }
-*/
-    @GetMapping("detail")
-    public String detail(int no,Model model) {
+
+
+        if(board == null){
+            return JsonResult.builder().status(JsonResult.FAILURE).build();
+        }
+
         boardService.increaseViewCount(no);
-        Board board = boardService.get(no);
-        model.addAttribute("board", board);
-        return "/board/detail";
+
+        return JsonResult.builder()
+                .status(JsonResult.SUCCESS)
+                .data(board)
+                .build();
     }
 
     @GetMapping("form")
