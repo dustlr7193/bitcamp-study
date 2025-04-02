@@ -15,10 +15,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
+import java.util.List;
 
 // 학습 목표:
 // - 로그인 페이지 커스텀 마이징
@@ -85,9 +86,28 @@ public class SecurityConfig {
                 .csrf()
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     .and()
-
+                 // 4) cors 설정
+                 // - 기본으로 비활성화된 상태
+                 // - 즉, Cross-Origin 요청(다른 사이트에서 AJAX로 요청하는 것)을 차단한다.
+                 // - 다른 사이트에서 요청하는 것을 허용하려면 CORS를 활성화시켜야 한다.
+                .cors()
+                    .and()
                 // SecurityFilterChain 준비
                 .build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000")); // 허용할 도메인
+        corsConfiguration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
+        corsConfiguration.setAllowedHeaders(List.of("*"));  //모든 요청 헤더를 수락한다.
+        corsConfiguration.setAllowCredentials(true);   // 다른 사이트로 쿠키 및 세션, HTTP
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        return source;
+
     }
 
     // 사용자 인증을 수행할 객체를 준비
